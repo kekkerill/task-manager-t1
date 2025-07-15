@@ -1,20 +1,32 @@
 # Task Manager
 
-## Возможности
+## Описание реализованного функционала
 
-- Создание, редактирование и удаление задач
-- Фильтрация задач по категории, статусу и приоритету
-- Просмотр подробной информации о задаче
-- Адаптивный дизайн для мобильных
+- **Создание, редактирование и удаление задач**
+- **Фильтрация задач**
+- **Адаптивный дизайн**
+- **Сохранение задач в localStorage**
 
-## Стек
+## Инструкция по запуску проекта
 
-- React + TypeScript
-- styled-components
-- @admiral-ds/react-ui
-- react-router-dom
+1. Установите зависимости:
+   ```
+   npm install
+   ```
+2. Запустите проект в режиме разработки:
+   ```
+   npm run dev
+   ```
+3. Откройте [http://localhost:5173](http://localhost:5173) в браузере.
 
-## Запуск проекта
+## Используемые технологии и подходы
 
-- npm install
-- npm run dev
+- **React + TypeScript**
+- **Effector**
+- **react-router-dom**
+- **styled-components**
+- **AdmiralDS**
+- **Autoprefixer + PostCSS**
+- **localStorage**
+- **Feature-Sliced Design (FSD)**
+- **Path aliases**
