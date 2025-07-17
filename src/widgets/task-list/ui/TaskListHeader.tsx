@@ -1,7 +1,7 @@
 import { Button, Select } from "@admiral-ds/react-ui";
 import styled from "styled-components";
 import { useUnit } from "effector-react";
-import { $taskModel, setFilters } from "@entities/task/model/taskStore";
+import { $filters, setFilters } from "@entities/task/model/taskStore";
 import { categories, statuses, priorities } from "@shared/config/constants";
 import { renderOption } from "@shared/ui/renderOption";
 import { useNavigate } from "react-router-dom";
@@ -41,7 +41,7 @@ const SelectWrapper = styled.div`
  * Хедер списка задач с фильтрами и кнопкой создания задачи.
  */
 function TaskListHeader() {
-  const { filters } = useUnit($taskModel);
+  const filters = useUnit($filters);
   const setFilter = useUnit(setFilters);
   const navigate = useNavigate();
   return (

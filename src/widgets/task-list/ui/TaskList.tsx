@@ -1,15 +1,13 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import styled from "styled-components";
 import { useUnit } from "effector-react";
-import {
-  $taskModel,
-  createTask,
-  deleteTask,
-  updateTask
-} from "@entities/task/model/taskStore";
+import { $filters } from "@entities/task/model/taskStore";
 import TaskCard from "@entities/task/ui/TaskCard";
 import TaskModal from "@widgets/task-modal/ui/TaskModal";
 import type { Task, TaskForm } from "@entities/task/model/taskStore";
+import axios from "axios";
+
+const API_URL = "http://localhost:3001/tasks";
 
 const ListWrapper = styled.div`
   width: 100%;
@@ -33,11 +31,9 @@ const ListWrapper = styled.div`
  * renderTaskCard вынесен для читаемости и возможного расширения логики.
  */
 function TaskList() {
-  const { tasks, filters } = useUnit($taskModel);
-  const create = useUnit(createTask);
-  const remove = useUnit(deleteTask);
-  const update = useUnit(updateTask);
-
+  const filters = useUnit($filters);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<TaskForm>({
     title: "",
     description: "",
@@ -45,7 +41,6 @@ function TaskList() {
     status: "",
     priority: ""
   });
-
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<TaskForm>({
@@ -56,17 +51,21 @@ function TaskList() {
     priority: ""
   });
 
-  const handleChange =
-    (field: keyof TaskForm) =>
-    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setForm((f) => ({
-        ...f,
-        [field]: e.target.value
-      }));
-    };
+  // Загрузка задач с backend
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get<Task[]>(API_URL)
+      .then((res) => setTasks(res.data))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleAddTask = () => {
-    create(form);
+  // CRUD
+  const handleAddTask = async () => {
+    const { title, category, status, priority } = form;
+    if (!title || !category || !status || !priority) return;
+    const res = await axios.post<Task>(API_URL, form);
+    setTasks((prev) => [...prev, res.data]);
     setForm({
       title: "",
       description: "",
@@ -74,6 +73,11 @@ function TaskList() {
       status: "",
       priority: ""
     });
+  };
+
+  const handleDeleteTask = async (id: number) => {
+    await axios.delete(`${API_URL}/${id}`);
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
   const handleEditClick = (task: Task) => {
@@ -88,23 +92,27 @@ function TaskList() {
     setEditModalOpen(true);
   };
 
+  const handleEditSave = async () => {
+    if (editTaskId === null) return;
+    const res = await axios.patch<Task>(`${API_URL}/${editTaskId}`, editForm);
+    setTasks((prev) => prev.map((t) => (t.id === editTaskId ? res.data : t)));
+    setEditModalOpen(false);
+    setEditTaskId(null);
+  };
+
+  const handleChange =
+    (field: keyof TaskForm) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+    };
+
   const handleEditChange =
     (field: keyof TaskForm) =>
     (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setEditForm((f) => ({
-        ...f,
-        [field]: e.target.value
-      }));
+      setEditForm((f) => ({ ...f, [field]: e.target.value }));
     };
 
-  const handleEditSave = () => {
-    if (editTaskId !== null) {
-      update({ id: editTaskId, task: editForm });
-      setEditModalOpen(false);
-      setEditTaskId(null);
-    }
-  };
-
+  // Фильтрация на клиенте
   const filteredTasks = tasks.filter(
     (task) =>
       (!filters.category || task.category === filters.category) &&
@@ -118,10 +126,12 @@ function TaskList() {
         key={task.id}
         task={task}
         onEdit={handleEditClick}
-        onDelete={remove}
+        onDelete={handleDeleteTask}
       />
     );
   }
+
+  if (loading) return <div>Загрузка...</div>;
 
   return (
     <ListWrapper>
@@ -152,7 +162,6 @@ function TaskList() {
           !editForm.priority
         }
       />
-
       {filteredTasks.map(renderTaskCard)}
     </ListWrapper>
   );

@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUnit } from "effector-react";
-import { createTask } from "@entities/task/model/taskStore";
 import type { TaskForm } from "@entities/task/model/taskStore";
 import TaskFormFields from "@features/task-edit/ui/TaskFormFields";
 import { Button } from "@admiral-ds/react-ui";
 import styled from "styled-components";
+import axios from "axios";
 
 const initialForm: TaskForm = {
   title: "",
@@ -28,7 +27,6 @@ const CreateTaskWrapper = styled.div`
  */
 function CreateTaskPage() {
   const [form, setForm] = useState<TaskForm>(initialForm);
-  const create = useUnit(createTask);
   const navigate = useNavigate();
 
   const handleChange =
@@ -37,8 +35,8 @@ function CreateTaskPage() {
       setForm((f) => ({ ...f, [field]: e.target.value }));
     };
 
-  const handleSave = () => {
-    create(form);
+  const handleSave = async () => {
+    await axios.post("http://localhost:3001/tasks", form);
     navigate("/");
   };
 

@@ -1,16 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Button } from "@admiral-ds/react-ui";
-import { useUnit } from "effector-react";
-import {
-  $taskModel,
-  updateTask,
-  createTask
-} from "@entities/task/model/taskStore";
-import type { TaskForm } from "@entities/task/model/taskStore";
 import TaskFormFields from "@features/task-edit/ui/TaskFormFields";
-import type { Task } from "@entities/task/model/taskStore";
+import type { TaskForm, Task } from "@entities/task/model/taskStore";
+import axios from "axios";
 
 const DetailsWrapper = styled.div`
   margin-top: 40px;
@@ -30,55 +24,52 @@ const DetailsWrapper = styled.div`
 function TaskDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tasks } = useUnit($taskModel);
-  const update = useUnit(updateTask);
-  const create = useUnit(createTask);
-  const task = tasks.find((t: Task) => t.id === Number(id));
-  const prevTasksCount = useRef(tasks.length);
-
-  const [editForm, setEditForm] = useState<TaskForm>(
-    task
-      ? {
-          title: task.title,
-          description: task.description,
-          category: task.category,
-          status: task.status,
-          priority: task.priority
-        }
-      : {
-          title: "",
-          description: "",
-          category: "",
-          status: "",
-          priority: ""
-        }
-  );
+  const [task, setTask] = useState<Task | null>(null);
+  const [editForm, setEditForm] = useState<TaskForm>({
+    title: "",
+    description: "",
+    category: "",
+    status: "",
+    priority: ""
+  });
+  const [loading, setLoading] = useState(!!id);
 
   useEffect(() => {
-    if (!task && tasks.length > prevTasksCount.current) {
-      const last = tasks[tasks.length - 1];
-      if (last) navigate(`/task/${last.id}`);
+    if (id) {
+      setLoading(true);
+      axios
+        .get<Task>(`http://localhost:3001/tasks/${id}`)
+        .then((res) => {
+          setTask(res.data);
+          setEditForm({
+            title: res.data.title,
+            description: res.data.description,
+            category: res.data.category,
+            status: res.data.status,
+            priority: res.data.priority
+          });
+        })
+        .finally(() => setLoading(false));
     }
-    prevTasksCount.current = tasks.length;
-  }, [tasks, task, navigate]);
+  }, [id]);
 
   const handleEditChange =
     (field: keyof TaskForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setEditForm((f) => ({
-        ...f,
-        [field]: e.target.value
-      }));
+      setEditForm((f) => ({ ...f, [field]: e.target.value }));
     };
 
-  const handleEditSave = () => {
-    if (task) {
-      update({ id: task.id, task: editForm });
+  const handleEditSave = async () => {
+    if (id && task) {
+      await axios.patch(`http://localhost:3001/tasks/${id}`, editForm);
+      navigate("/");
     } else {
-      create(editForm);
-      // редирект произойдёт в useEffect
+      await axios.post("http://localhost:3001/tasks", editForm);
+      navigate("/");
     }
   };
+
+  if (loading) return <div>Загрузка...</div>;
 
   return (
     <DetailsWrapper>
