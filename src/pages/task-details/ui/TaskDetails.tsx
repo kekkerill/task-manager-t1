@@ -6,6 +6,8 @@ import TaskFormFields from "@features/task-edit/ui/TaskFormFields";
 import type { TaskForm, Task } from "@entities/task/model/taskStore";
 import axios from "axios";
 
+const API_URL = (import.meta.env.VITE_API_URL || "/api") + "/tasks";
+
 const DetailsWrapper = styled.div`
   margin-top: 40px;
   background: #23272e;
@@ -38,7 +40,7 @@ function TaskDetails() {
     if (id) {
       setLoading(true);
       axios
-        .get<Task>(`http://localhost:3001/tasks/${id}`)
+        .get<Task>(`${API_URL}/${id}`)
         .then((res) => {
           setTask(res.data);
           setEditForm({
@@ -61,10 +63,10 @@ function TaskDetails() {
 
   const handleEditSave = async () => {
     if (id && task) {
-      await axios.patch(`http://localhost:3001/tasks/${id}`, editForm);
+      await axios.patch(`${API_URL}/${id}`, editForm);
       navigate("/");
     } else {
-      await axios.post("http://localhost:3001/tasks", editForm);
+      await axios.post(API_URL, editForm);
       navigate("/");
     }
   };

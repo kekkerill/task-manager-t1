@@ -6,6 +6,8 @@ import { Button } from "@admiral-ds/react-ui";
 import styled from "styled-components";
 import axios from "axios";
 
+const API_URL = (import.meta.env.VITE_API_URL || "/api") + "/tasks";
+
 const initialForm: TaskForm = {
   title: "",
   description: "",
@@ -36,7 +38,7 @@ function CreateTaskPage() {
     };
 
   const handleSave = async () => {
-    await axios.post("http://localhost:3001/tasks", form);
+    await axios.post(API_URL, form);
     navigate("/");
   };
 

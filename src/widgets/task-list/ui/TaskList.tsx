@@ -7,7 +7,7 @@ import TaskModal from "@widgets/task-modal/ui/TaskModal";
 import type { Task, TaskForm } from "@entities/task/model/taskStore";
 import axios from "axios";
 
-const API_URL = "http://localhost:3001/tasks";
+const API_URL = (import.meta.env.VITE_API_URL || "/api") + "/tasks";
 
 const ListWrapper = styled.div`
   width: 100%;
