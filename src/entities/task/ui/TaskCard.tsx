@@ -9,6 +9,8 @@ import {
 } from "@shared/config/constants";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
+import { useState } from "react";
+import ConfirmModal from "@shared/ui/ConfirmModal";
 
 const TaskCardStyled = styled.div`
   background: transparent;
@@ -68,48 +70,60 @@ function TaskCard({ task, onEdit, onDelete }: Props) {
   const categoryKind = categoryTagKind[task.category] || defaultTagKind;
   const statusKind = statusTagKind[task.status] || defaultTagKind;
   const priorityKind = priorityTagKind[task.priority] || defaultTagKind;
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const created = task.createdAt
     ? format(new Date(task.createdAt), "dd.MM.yyyy HH:mm")
     : "";
 
   return (
-    <TaskCardStyled>
-      <h3 style={{ margin: 0, width: "auto" }}>
-        <TitleLink to={`/task/${task.id}`}>{task.title}</TitleLink>
-      </h3>
+    <>
+      {isConfirmModalOpen && (
+        <ConfirmModal
+          onClose={() => setIsConfirmModalOpen(false)}
+          onConfirm={() => {
+            setIsConfirmModalOpen(false);
+            onDelete(task.id);
+          }}
+        />
+      )}
+      <TaskCardStyled>
+        <h3 style={{ margin: 0, width: "auto" }}>
+          <TitleLink to={`/task/${task.id}`}>{task.title}</TitleLink>
+        </h3>
 
-      <p style={{ margin: 0, color: "#b4b4b4", wordBreak: "break-all" }}>
-        {task.description}
-      </p>
-      <TaskMeta>
-        <Tag kind={categoryKind} statusViaBackground>
-          {task.category}
-        </Tag>
-        <Tag kind={statusKind} statusViaBackground>
-          {task.status}
-        </Tag>
-        <Tag kind={priorityKind} statusViaBackground>
-          {task.priority}
-        </Tag>
-        {created && (
-          <span style={{ color: "#888", fontSize: 12, marginLeft: 8 }}>
-            {created}
-          </span>
-        )}
-      </TaskMeta>
-      <TaskMeta>
-        <Button dimension="s" onClick={() => onEdit(task)}>
-          Редактировать
-        </Button>
-        <Button
-          dimension="s"
-          appearance="danger"
-          onClick={() => onDelete(task.id)}
-        >
-          Удалить
-        </Button>
-      </TaskMeta>
-    </TaskCardStyled>
+        <p style={{ margin: 0, color: "#b4b4b4", wordBreak: "break-all" }}>
+          {task.description}
+        </p>
+        <TaskMeta>
+          <Tag kind={categoryKind} statusViaBackground>
+            {task.category}
+          </Tag>
+          <Tag kind={statusKind} statusViaBackground>
+            {task.status}
+          </Tag>
+          <Tag kind={priorityKind} statusViaBackground>
+            {task.priority}
+          </Tag>
+          {created && (
+            <span style={{ color: "#888", fontSize: 12, marginLeft: 8 }}>
+              {created}
+            </span>
+          )}
+        </TaskMeta>
+        <TaskMeta>
+          <Button dimension="s" onClick={() => onEdit(task)}>
+            Редактировать
+          </Button>
+          <Button
+            dimension="s"
+            appearance="danger"
+            onClick={() => setIsConfirmModalOpen(true)}
+          >
+            Удалить
+          </Button>
+        </TaskMeta>
+      </TaskCardStyled>
+    </>
   );
 }
 

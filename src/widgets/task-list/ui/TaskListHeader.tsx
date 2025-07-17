@@ -20,14 +20,17 @@ const Header = styled.div`
 const FilterWrapper = styled.div`
   display: flex;
   gap: 15px;
-  @media (max-width: 720px) {
+  @media (max-width: 980px) {
+    justify-content: space-between;
+  }
+  @media (max-width: 780px) {
     flex-direction: column;
   }
 `;
 const CustomSelect = styled(Select)`
   border-radius: 4px;
   width: 200px;
-  @media (max-width: 720px) {
+  @media (max-width: 780px) {
     width: 100%;
   }
 `;
